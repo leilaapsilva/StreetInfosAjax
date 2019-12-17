@@ -6,10 +6,13 @@ function loadData() {
     var $nytHeaderElem = $('#nytimes-header');
     var $nytElem = $('#nytimes-articles');
     var $greeting = $('#greeting');
+    var $newsElem = $('#news-elem')
+    var $newsHeaderElem = $('#news-header');
 
     // clear out old data before new request
     $wikiElem.text("");
     $nytElem.text("");
+    $newsElem.text("");
 
     var streetStr = $('#street').val();
     var cityStr = $('#city').val();
@@ -25,19 +28,20 @@ function loadData() {
 
     var nytimesUrl = 'http://api.nytimes.com/svc/search/v2/articlesearch.json?q=' + cityStr + '&sort=newest&api-key=cGkDcrqi4RzqMJkx31FqYQeewkGcIgO2'
 
-    $.getJSON(nytimesUrl, function(data){
+    $.getJSON(nytimesUrl, function (data) {
 
         $nytHeaderElem.text('Artigos do New York Times sobre ' + cityStr);
 
         articles = data.response.docs;
-	for(var i = 0; i < articles.length; i++){
-	    var article = articles[i];
-	    $nytElem.append('<li class="article">'+ '<a href="'+article.web_url+'">'+article.headline.main+'</a>'+ '<p>' + article.snippet + '</p>'+ '</li>');
-	};
+        for (var i = 0; i < articles.length; i++) {
+            var article = articles[i];
+            $nytElem.append('<li class="article">' + '<a href="' + article.web_url + '">' + article.headline.main + '</a>' + '<p>' + article.snippet + '</p>' + '</li>');
+        };
+    })
 
     // tratamento de erros do request
-    })//.error(funtion(e){
-      //  $nytHeaderElem.text('Os artigos não foram carregados pois ocorreu um erro');
+    //.error(funtion(e){
+    //  $nytHeaderElem.text('Os artigos não foram carregados pois ocorreu um erro');
     //}); 
 
     // Wikipedia AJAX request
@@ -45,39 +49,47 @@ function loadData() {
     var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + cityStr + '&format=json&callback=wikiCallback';
 
     // Timeout wikipedia request
-    var wikiRequestTimeout = setTimeout(function(){
-    	$wikiElem.text("Falha ao carregar conteúdo da Wikipedia");
+    var wikiRequestTimeout = setTimeout(function () {
+        $wikiElem.text("Falha ao carregar conteúdo da Wikipedia");
     }, 8000);
 
     $.ajax({
-	url: wikiUrl,
- 	dataType: "jsonp",
-	// jsonp: "callback",
-	success: function( response ){
-	    var articleList = response[1];
+        url: wikiUrl,
+        dataType: "jsonp",
+        // jsonp: "callback",
+        success: function (response) {
+            var articleList = response[1];
 
-	    for(var i = 0; i < articleList.length; i++){
-		articleStr = articleList[i];
-		var url = 'http://en.wikipedia.org/wiki/' + articleStr;
-		$wikiElem.append('<li><a href="' + url + '">'+ articleStr + '</a></li>');
-	    };
-	    
- 	    clearTimeout(wikiRequestTimeout);
+            for (var i = 0; i < articleList.length; i++) {
+                articleStr = articleList[i];
+                var url = 'http://en.wikipedia.org/wiki/' + articleStr;
+                $wikiElem.append('<li><a href="' + url + '">' + articleStr + '</a></li>');
+            };
 
-	}
+            clearTimeout(wikiRequestTimeout);
+        }
     });
-	
 
 
+    // News api: f3fdc4acb3764b64b9f8a373792e5b72
+    // https://newsapi.org/v2/everything?q=s%C3%A3o%20carlos%20sp&apiKey=f3fdc4acb3764b64b9f8a373792e5b72
 
+    // Notícias brasileiras sobre a cidade pesquisada
+    var newsUrl = 'https://newsapi.org/v2/everything?q=' + 'sao'+ '&apiKey=f3fdc4acb3764b64b9f8a373792e5b72'
 
-    // load streetview
+    $.getJSON(newsUrl, function (data) {
+        $newsHeaderElem.text('Notícias sobre ' + cityStr);
+        news = data.articles;
+        for (var i = 0; i < news.length; i++) {
+            var newsObj = news[i];
+            $newsElem.append('<li class="news">' + '<a href="' + newsObj.web_url + '">' + newsObj.headline.main + '</a>' + '<p>' + newsObj.snippet + '</p>' + '</li>');
+        };
+    });
 
-    // YOUR CODE GOES HERE!
-
-    return false;
 };
 
 $('#form-container').submit(loadData);
 
-// loadData();
+
+
+loadData();
